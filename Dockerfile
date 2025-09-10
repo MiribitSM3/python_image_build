@@ -6,7 +6,7 @@ ENV PYTHONUNBUFFERED=1 \
 
 # 파이썬 패키지 설치: pandas, pyarrow, psycopg (binary)
 RUN python -m pip install --upgrade pip \
- && pip install "pandas" "pyarrow" "psycopg[binary]"
+ && pip install "pandas" "pyarrow" "psycopg[binary]" "paramiko"
 
 # 앱 파일 복사 (필요한 파일만)
 WORKDIR /app
@@ -17,5 +17,4 @@ WORKDIR /app
 RUN useradd -ms /bin/bash appuser
 USER appuser
 
-ENTRYPOINT ["/usr/bin/tini", "--"]
 CMD ["python", "-c", "print('image ready: import gen, add, load_postgres and call handle(evt)')"]
