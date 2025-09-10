@@ -1,16 +1,21 @@
+# Dockerfile
 FROM python:3.11-slim
 
-ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1 \
+ENV PYTHONUNBUFFERED=1 \
     PIP_NO_CACHE_DIR=1
 
-# (옵션) 안정적인 종료 신호 처리
-RUN apt-get update && apt-get install -y --no-install-recommends tini && rm -rf /var/lib/apt/lists/*
+# 파이썬 패키지 설치: pandas, pyarrow, psycopg (binary)
+RUN python -m pip install --upgrade pip \
+ && pip install "pandas" "pyarrow" "psycopg[binary]"
 
-# 여기에서만 pip 사용 (GitHub Actions 내부)
-RUN python -m pip install --upgrade pip && \
-    pip install pandas psycopg[binary]
-
+# 앱 파일 복사 (필요한 파일만)
 WORKDIR /app
-ENTRYPOINT ["/usr/bin/tini","--"]
-CMD ["python","-c","import pandas as pd; print('pandas', pd.__version__)"]
+# 예: 위 3개 스텝 파일을 이미지에 포함하려면 아래처럼 복사
+# COPY gen.py add.py load_postgres.py /app/
+
+# 비루트 권장
+RUN useradd -ms /bin/bash appuser
+USER appuser
+
+ENTRYPOINT ["/usr/bin/tini", "--"]
+CMD ["python", "-c", "print('image ready: import gen, add, load_postgres and call handle(evt)')"]
