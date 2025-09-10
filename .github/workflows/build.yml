@@ -7,7 +7,7 @@ on:
 
 permissions:
   contents: read
-  packages: write    # GHCR 푸시에 필요
+  packages: write   # GHCR 푸시에 필요
 
 jobs:
   build:
@@ -23,14 +23,20 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      # 경로를 전부 소문자로 변환 (중요!)
+      - name: Set lowercase image name
+        run: |
+          IMAGE="ghcr.io/${{ github.repository }}/python-pandas"
+          echo "IMAGE_NAME=$(echo $IMAGE | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+
       - name: Build and push
         uses: docker/build-push-action@v6
         with:
           context: .
-          # 만약 파일명이 'pythonDocker'라면 아래 줄을 사용하세요:
+          # Dockerfile 이름이 'pythonDocker'라면 아래 줄로 교체:
           # file: ./pythonDocker
           file: ./Dockerfile
           push: true
           tags: |
-            ghcr.io/${{ github.repository }}/python-pandas:1.0
-            ghcr.io/${{ github.repository }}/python-pandas:latest
+            ${{ env.IMAGE_NAME }}:1.0
+            ${{ env.IMAGE_NAME }}:latest
